@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\TransparentGiving.Api.props" />
+</Project>
