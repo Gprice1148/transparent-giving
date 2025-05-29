@@ -75,7 +75,7 @@ namespace TransparentGiving.Api.Controllers
             return Ok(donations);
         }
 
-
+        [Authorize]
         [HttpGet("grouped")]
         public IActionResult GetGroupedDonations([FromQuery] string donorName)
         {
