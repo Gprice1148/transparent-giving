@@ -79,19 +79,36 @@ namespace TransparentGiving.Api.Controllers
         [HttpGet("grouped")]
         public IActionResult GetGroupedDonations([FromQuery] string donorName)
         {
-            if (string.IsNullOrWhiteSpace(donorName))
-                return BadRequest("Missing donorName");
+            if (string.IsNullOrEmpty(donorName))
+                return BadRequest("donorName is required.");
 
-            var grouped = _donationLog
+            // Filter donations made by the specified donor
+            var filteredDonations = _donations
                 .Where(d => d.DonorName.Equals(donorName, StringComparison.OrdinalIgnoreCase))
-                .GroupBy(d => d.Timestamp.Date)
-                .OrderByDescending(g => g.Key)
-                .Select(g => new
-                {
-                    Date = g.Key.ToString("yyyy-MM-dd"),
-                    Donations = g.OrderByDescending(d => d.Timestamp)
-                })
                 .ToList();
+
+            // Group all donations by ChildId
+            var grouped = _donations
+                .GroupBy(d => d.ChildId)
+                .Select(group =>
+                {
+                    var first = group.First();
+                    var totalRaised = group.Sum(d => d.Amount);
+                    var donatedByUser = filteredDonations
+                        .Where(d => d.ChildId == group.Key)
+                        .Sum(d => d.Amount);
+
+                    var child = _children.FirstOrDefault(c => c.Id == group.Key);
+
+                    return new GroupedDonationDto
+                    {
+                        ChildId = group.Key,
+                        ChildName = child?.Name ?? "Unknown",
+                        DonatedByUser = donatedByUser,
+                        TotalRaised = totalRaised,
+                        Goal = child?.GoalAmount ?? 0
+                    };
+                });
 
             return Ok(grouped);
         }
