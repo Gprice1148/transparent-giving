@@ -84,32 +84,38 @@ namespace TransparentGiving.Api.Controllers
             if (string.IsNullOrWhiteSpace(donorName))
                 return BadRequest("Missing donorName");
 
+            var children = _childService.GetAllChildren();
+
             var filteredDonations = _donationLog
                 .Where(d => d.DonorName.Equals(donorName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            var grouped = _donationLog
-                .GroupBy(d => d.ChildId)
+            // Flatten all matches so each child can be grouped
+            var allChildMatches = _donationLog
+                .SelectMany(d => d.Matches)
+                .GroupBy(m => m.Id)
                 .Select(group =>
                 {
-                    var totalRaised = group.Sum(d => d.Amount);
+                    var childId = group.Key;
+                    var totalRaised = group.Sum(m => m.Allocated);
                     var donatedByUser = filteredDonations
-                        .Where(d => d.ChildId == group.Key)
-                        .Sum(d => d.Amount);
+                        .SelectMany(fd => fd.Matches)
+                        .Where(m => m.Id == childId)
+                        .Sum(m => m.Allocated);
 
-                    var child = _children.FirstOrDefault(c => c.Id == group.Key);
+                    var child = children.FirstOrDefault(c => c.Id == childId);
 
                     return new GroupedDonationDto
                     {
-                        ChildId = group.Key,
+                        ChildId = childId,
                         ChildName = child?.Name ?? "Unknown",
                         DonatedByUser = donatedByUser,
                         TotalRaised = totalRaised,
-                        Goal = child?.GoalAmount ?? 0
+                        Goal = child?.CostTotal ?? 0
                     };
                 });
 
-            return Ok(grouped);
+            return Ok(allChildMatches);
         }
 
         private List<ChildMatch> AllocateDonation(decimal donationAmount, List<ChildProfile> children, out decimal remaining)

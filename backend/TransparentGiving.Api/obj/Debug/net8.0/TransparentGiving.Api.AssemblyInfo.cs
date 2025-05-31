@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TransparentGiving.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ee5d09fe903f6e8a068d8dde77a07027693b06ba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+739d44a37f0c4939bed9494eb66a50304befa2ed")]
 [assembly: System.Reflection.AssemblyProductAttribute("TransparentGiving.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TransparentGiving.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
