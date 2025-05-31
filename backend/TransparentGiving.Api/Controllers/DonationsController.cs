@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using TransparentGiving.Api.Models;
 using TransparentGiving.Api.Services;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace TransparentGiving.Api.Controllers
 {
@@ -79,20 +81,17 @@ namespace TransparentGiving.Api.Controllers
         [HttpGet("grouped")]
         public IActionResult GetGroupedDonations([FromQuery] string donorName)
         {
-            if (string.IsNullOrEmpty(donorName))
-                return BadRequest("donorName is required.");
+            if (string.IsNullOrWhiteSpace(donorName))
+                return BadRequest("Missing donorName");
 
-            // Filter donations made by the specified donor
-            var filteredDonations = _donations
+            var filteredDonations = _donationLog
                 .Where(d => d.DonorName.Equals(donorName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            // Group all donations by ChildId
-            var grouped = _donations
+            var grouped = _donationLog
                 .GroupBy(d => d.ChildId)
                 .Select(group =>
                 {
-                    var first = group.First();
                     var totalRaised = group.Sum(d => d.Amount);
                     var donatedByUser = filteredDonations
                         .Where(d => d.ChildId == group.Key)
